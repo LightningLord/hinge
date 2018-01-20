@@ -1,5 +1,7 @@
 class WorldStats
 
+  DEFAULT_CALCULATOR = 'mean'
+
   attr_accessor :dataset
 
   def self.build_dataset
@@ -20,7 +22,15 @@ class WorldStats
   end
 
   def gdp(options = {})
-
+    all_gdp = self.dataset.map{|stats| stats[:gdp]}
+    calculator = options[:calculator] || DEFAULT_CALCULATOR
+    if calculator == 'median'
+      median(all_gdp)
+    elsif calculator == DEFAULT_CALCULATOR
+      mean(all_gdp)
+    else
+      #not required yet
+    end
   end
 
   private
@@ -31,6 +41,18 @@ class WorldStats
     (sorted[(len - 1) / 2] + sorted[len / 2]) / 2.0
   end
 
+  def mean(array)
+    array.reduce(:+) / array.length.to_f
+  end
+
+end
+
+def assert_equal(expression, result)
+  if expression == result
+    "TRUE"
+  else
+    "Expected #{expression} to equal #{result}"
+  end
 end
 
 def perform
@@ -42,7 +64,8 @@ def perform
   end
 
 
-  computer.gdp(calculator: 'median')
+  p assert_equal(computer.gdp(calculator: 'median'), 339.0)
+  p assert_equal(computer.gdp(calculator: 'mean'), 346.5)
    # --> e.g 128.1
   computer.population(countries: random_subset['country'])
    # --> e.g 92.02
@@ -54,7 +77,7 @@ def perform
   # --> i.e same as above, applying median to all countries over all metrics
 end
 
-
+perform
 
 ############ INSTRUCTIONS ############
 
