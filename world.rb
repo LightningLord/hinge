@@ -2,6 +2,8 @@ class WorldStats
 
   DEFAULT_CALCULATOR = 'mean'
 
+  ALL_METRICS = %w(gdp population life_expectancy)
+
   attr_accessor :dataset
 
   def self.build_dataset
@@ -46,7 +48,38 @@ class WorldStats
     calculate(calculator, all_expectancies)
   end
 
+  def mean(options = {})
+    metrics = (options[:metrics] || ALL_METRICS).map(&:to_sym)
+    countries = get_data_by_countries(options[:countries]) || self.dataset
 
+    output = {}
+    print_operation('mean', metrics.join(', '), countries)
+    metrics.each do |metric|
+      if ALL_METRICS.include?(metric.to_s)
+        output[metric] = self.send(metric, options)
+      else
+        p "metric #{metric} not supported, doing nothing"
+      end
+    end
+    output
+  end
+
+  def median(options = {})
+    metrics = (options[:metrics] || ALL_METRICS).map(&:to_sym)
+    countries = get_data_by_countries(options[:countries]) || self.dataset
+
+    output = {}
+    print_operation('median', metrics.join(', '), countries)
+    options.merge!(calculator: 'median')
+    metrics.each do |metric|
+      if ALL_METRICS.include?(metric.to_s)
+        output[metric] = self.send(metric, options)
+      else
+        p "metric #{metric} not supported, doing nothing"
+      end
+    end
+    output
+  end
 
   private
 
@@ -66,6 +99,7 @@ class WorldStats
       end
     else
       p "no data for #{calculator}, doing nothing"
+      return
     end
   end
 
@@ -112,9 +146,10 @@ def perform
    # --> e.g 92.02
   p assert_equal(computer.life_expectancy, 69.125)
   # --> e.g 70.3
-  computer.mean(metrics: %w(gdp population), countries: random_subset[:country])
+  p computer.mean(metrics: %w(gdp population), countries: random_subset[:country])
   # --> e.g {gdp: 444, population: 122}
   computer.median
+  p assert_equal(computer.median, {gdp: 339.0 , population: 347.5, life_expectancy: 70.0})
   # --> i.e same as above, applying median to all countries over all metrics
 end
 
