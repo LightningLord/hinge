@@ -23,20 +23,41 @@ class WorldStats
 
   def gdp(options = {})
     countries = get_data_by_countries(options[:countries]) || self.dataset
-    country_names = countries.map{|stats| stats[:country]}
     all_gdp = countries.map{|stats| stats[:gdp]}
     calculator = options[:calculator] || DEFAULT_CALCULATOR
-    p "calculating #{calculator} gdp for #{country_names.join(', ')}"
-    if calculator == 'median'
-      median(all_gdp)
-    elsif calculator == DEFAULT_CALCULATOR
-      mean(all_gdp)
-    else
-      #not required yet
-    end
+    print_operation(calculator, 'gdp', countries)
+    calculate(calculator, all_gdp)
+
+  end
+
+  def population(options = {})
+    countries = get_data_by_countries(options[:countries]) || self.dataset
+    all_population = countries.map{|stats| stats[:population]}
+    calculator = options[:calculator] || DEFAULT_CALCULATOR
+    print_operation(calculator, 'population', countries)
+    calculate(calculator, all_population)
   end
 
   private
+
+  def print_operation(calculator, stat, countries)
+    country_names = countries.map{|stats| stats[:country]}
+    p "calculating #{calculator} #{stat} for #{country_names.join(', ')}"
+  end
+
+  def calculate(calculator, data)
+    if data.any?
+      if calculator == 'median'
+        median(data)
+      elsif calculator == DEFAULT_CALCULATOR
+        mean(data)
+      else
+        #not required yet
+      end
+    else
+      p "no data for #{calculator}, doing nothing"
+    end
+  end
 
   def get_data_by_countries(countries)
     return unless countries
@@ -77,7 +98,7 @@ def perform
   p assert_equal(computer.gdp(calculator: 'median'), 339.0)
   p assert_equal(computer.gdp(calculator: 'mean'), 346.5)
    # --> e.g 128.1
-  computer.population(countries: random_subset[:country])
+  p computer.population(countries: random_subset[:country])
    # --> e.g 92.02
   computer.life_expectancy
   # --> e.g 70.3
