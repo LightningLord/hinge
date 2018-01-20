@@ -38,6 +38,16 @@ class WorldStats
     calculate(calculator, all_population)
   end
 
+  def life_expectancy(options = {})
+    countries = get_data_by_countries(options[:countries]) || self.dataset
+    all_expectancies = countries.map{|stats| stats[:life_expectancy]}
+    calculator = options[:calculator] || DEFAULT_CALCULATOR
+    print_operation(calculator, 'life expectancy', countries)
+    calculate(calculator, all_expectancies)
+  end
+
+
+
   private
 
   def print_operation(calculator, stat, countries)
@@ -48,9 +58,9 @@ class WorldStats
   def calculate(calculator, data)
     if data.any?
       if calculator == 'median'
-        median(data)
+        calculate_median(data)
       elsif calculator == DEFAULT_CALCULATOR
-        mean(data)
+        calculate_mean(data)
       else
         #not required yet
       end
@@ -66,13 +76,13 @@ class WorldStats
 
 
 
-  def median(array)
+  def calculate_median(array)
     sorted = array.sort
     len = sorted.length
     (sorted[(len - 1) / 2] + sorted[len / 2]) / 2.0
   end
 
-  def mean(array)
+  def calculate_mean(array)
     array.reduce(:+) / array.length.to_f
   end
 
@@ -100,7 +110,7 @@ def perform
    # --> e.g 128.1
   p computer.population(countries: random_subset[:country])
    # --> e.g 92.02
-  computer.life_expectancy
+  p assert_equal(computer.life_expectancy, 69.125)
   # --> e.g 70.3
   computer.mean(metrics: %w(gdp population), countries: random_subset[:country])
   # --> e.g {gdp: 444, population: 122}
